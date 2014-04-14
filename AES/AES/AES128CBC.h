@@ -20,12 +20,12 @@ public:
 	void Decrypt();
 
 private:
-	BYTE key[COLUMN_SIZE][4];
-	BYTE round_key[ROUNDS - 1][COLUMN_SIZE][4];
+	BYTE key[4][COLUMN_SIZE];
+	BYTE round_key[ROUNDS - 1][4][COLUMN_SIZE];
 
 	// Generate the expanded round keys.
 	void keySchedule();
 
 };
 
-
+void copyBlock(BYTE src[4][COLUMN_SIZE], BYTE dst[4][COLUMN_SIZE]);
