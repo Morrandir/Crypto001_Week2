@@ -39,7 +39,7 @@ void AES128CBC::Decrypt() {
 
 	this->keySchedule();
 
-	for (; this->size_CT > 0; this->size_CT -= BLOCK_SIZE, this->CT += BLOCK_SIZE, plaintext += BLOCK_SIZE) {
+	for (int i = 0; i < this->size_CT; i += BLOCK_SIZE) {
 
 		BYTE ct_block[COLUMN_SIZE][4];
 		BYTE IV_block[COLUMN_SIZE][4];
@@ -54,6 +54,8 @@ void AES128CBC::Decrypt() {
 		blockXOR(this->round_key[0], ct_block, COLUMN_SIZE);
 		blockXOR(IV_block, ct_block, COLUMN_SIZE);
 		block2stream(ct_block, plaintext, COLUMN_SIZE);
+
+		plaintext += BLOCK_SIZE;
 	}
 
 
@@ -64,7 +66,7 @@ void AES128CBC::setCT(char* CT_hex) {
 	char IV_hex[BLOCK_SIZE * 2];
 	char* CT_hex_noIV;
 	for (int i = 0; i < BLOCK_SIZE * 2; i++) {
-		IV_hex[i] = *(CT_hex + i);
+		IV_hex[i] = CT_hex[i];
 	}
 	this->setIV(IV_hex);
 

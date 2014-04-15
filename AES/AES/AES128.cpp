@@ -45,7 +45,7 @@ void AES128::keySchedule() {
 
 	copyBlock(this->key, this->round_key[0], COLUMN_SIZE);
 
-	for (int iRcon = 1; iRcon < ROUNDS; iRcon++) {
+	for (int iRcon = 1; iRcon <= ROUNDS; iRcon++) {
 		BYTE temp[1][4];
 		
 		// generate the first column for each round_key block:
@@ -58,7 +58,7 @@ void AES128::keySchedule() {
 
 		// generate the remaining 3 columns for each round_key block:
 		for (int i = 1; i < 4; i++) {
-			copyBlock(this->round_key[iRcon], temp, 1);
+			copyBlock(this->round_key[iRcon] + i - 1, temp, 1);
 			sectionXOR(this->round_key[iRcon - 1][i], temp[0]);
 			copyBlock(temp, this->round_key[iRcon] + i, 1);
 		}
