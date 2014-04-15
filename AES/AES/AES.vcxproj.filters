@@ -27,7 +27,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AESCBC.h">
+    <ClInclude Include="AES128.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AES128CBC.h">
@@ -44,7 +44,7 @@
     <ClCompile Include="AES.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AESCBC.cpp">
+    <ClCompile Include="AES128.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AES128CBC.cpp">

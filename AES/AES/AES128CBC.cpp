@@ -12,55 +12,80 @@ AES128CBC::~AES128CBC()
 }
 
 
-
-// Take a key text of hex string, tranform it to binary string and store in the class member key;
-void AES128CBC::setKey(char* key_hex) {
-
-	BYTE* temp_key_bin = hex2bin(key_hex);
-	for (int i = 0; i < COLUMN_SIZE; i++) {
-		for (int j = 0; j < 4; j++) {
-			this->key[j][i] = temp_key_bin[4 * i + j];
-		}
-	}
-
-	if (temp_key_bin != NULL) {
-		delete[] temp_key_bin;
-		temp_key_bin = NULL;
-	}
-}
-
-// Decrypt() decrypts this->CT using this->key, provided that both members have been set correctly.
 void AES128CBC::Decrypt() {
+	
+	BYTE* plaintext;
 	if (this->CT == NULL) {
 		printf("please provide cipher text...\n");
+		return;
+	}
+	if (this->size_CT % BLOCK_SIZE != 0) {
+		printf("cipher text size if not n*16 bytes, make sure you provided the correct cipher text...\n");
 		return;
 	}
 	if (this->key == NULL) {
 		printf("please provide key...\n");
 		return;
 	}
+
+	plaintext = new BYTE[this->size_CT];
+	if (plaintext != NULL) {
+		this->PT = plaintext;
+	}
+	else {
+		printf("error allocating memory for plain text...\n");
+		return;
+	}
+
 	this->keySchedule();
+
+	for (; this->size_CT > 0; this->size_CT -= BLOCK_SIZE, this->CT += BLOCK_SIZE, plaintext += BLOCK_SIZE) {
+
+		BYTE ct_block[COLUMN_SIZE][4];
+		BYTE IV_block[COLUMN_SIZE][4];
+		stream2block(this->CT, ct_block, COLUMN_SIZE);
+		copyBlock(this->IV, IV_block, COLUMN_SIZE);
+		this->setIV(ct_block);
+
+		for (int iRound = ROUNDS; iRound > 0; iRound--) {
+			AESround_inv(ct_block, this->round_key[iRound], COLUMN_SIZE, iRound, ROUNDS);
+		}
+
+		blockXOR(this->round_key[0], ct_block, COLUMN_SIZE);
+		blockXOR(IV_block, ct_block, COLUMN_SIZE);
+		block2stream(ct_block, plaintext, COLUMN_SIZE);
+	}
+
+
+
 }
 
-// Generate the expanded round keys.
-void AES128CBC::keySchedule() {
+void AES128CBC::setCT(char* CT_hex) {
+	char IV_hex[BLOCK_SIZE * 2];
+	char* CT_hex_noIV;
+	for (int i = 0; i < BLOCK_SIZE * 2; i++) {
+		IV_hex[i] = *(CT_hex + i);
+	}
+	this->setIV(IV_hex);
 
-	copyBlock(this->key, this->round_key[0]);
+	CT_hex_noIV = new char[strlen(CT_hex) - BLOCK_SIZE * 2 + 1];
+	for (int i = 0; i < strlen(CT_hex) - BLOCK_SIZE * 2; i++) {
+		CT_hex_noIV[i] = CT_hex[BLOCK_SIZE * 2 + i];
+	}
+	CT_hex_noIV[strlen(CT_hex) - BLOCK_SIZE * 2] = 0;
 
-	for (int iRcon = 1; iRcon < ROUNDS; iRcon++) {
-		BYTE temp[4][1];
-		
-		for (int i = 0; i < 4; i++) {
-			temp[i][0] = this->round_key[iRcon - 1][i][3];
-		}
+	AES::setCT(CT_hex_noIV);
+
+	if (CT_hex_noIV != NULL) {
+		delete[] CT_hex_noIV;
+		CT_hex_noIV = NULL;
 	}
 }
 
-void copyBlock(BYTE src[4][COLUMN_SIZE], BYTE dst[4][COLUMN_SIZE]) {
+void AES128CBC::setIV(char* IV_hex) {
+	stream2block(hex2bin(IV_hex), this->IV, COLUMN_SIZE);
+}
 
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < COLUMN_SIZE; j++) {
-			dst[i][j] = src[i][j];
-		}
-	}
+void AES128CBC::setIV(BYTE IV_block[COLUMN_SIZE][4]) {
+	copyBlock(IV_block, this->IV, COLUMN_SIZE);
 }
