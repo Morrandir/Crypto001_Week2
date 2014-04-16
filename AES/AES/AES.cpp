@@ -34,6 +34,10 @@ void AES::setPT(char* PT_hex) {
 
 }
 
+void AES::getPT() {
+	printf((char*)this->PT);
+}
+
 // Take a stream of hex string and output a steam of binary string;
 BYTE* hex2bin(char* string_hex) {
 	

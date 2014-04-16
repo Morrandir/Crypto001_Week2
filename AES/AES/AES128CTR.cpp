@@ -85,4 +85,5 @@ void AES128CTR::Decrypt() {
 	}
 	this->PT = this->PT_holder;
 
+	this->getPT();
 }

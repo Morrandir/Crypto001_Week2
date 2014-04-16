@@ -185,10 +185,18 @@ public:
 	~AES();
 
 	// Take a cipher text of hex string, transform it to binary string and assign to class member CT;
-	void setCT(char* CT_hex);
+	virtual void setCT(char* CT_hex);
 
 	// Take a plain text of hex string, transform it to binary string and assign to class member PT;
-	void setPT(char* PT_hex);
+	virtual void setPT(char* PT_hex);
+
+	virtual void getPT();
+
+	virtual void setKey(char* key_hex) = 0;
+
+	virtual void Encrypt() = 0;
+
+	virtual void Decrypt() = 0;
 
 protected:
 	BYTE* PT;

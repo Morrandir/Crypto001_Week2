@@ -61,6 +61,7 @@ void AES128CBC::Decrypt() {
 	// plaintext[-1] read out the padding number and then we use it as index to add an end of string the the plaintext.
 	plaintext[-plaintext[-1]] = 0;
 
+	this->getPT();
 }
 
 void AES128CBC::setCT(char* CT_hex) {
