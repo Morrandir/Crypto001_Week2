@@ -43,7 +43,7 @@ void AES128CBC::Decrypt() {
 
 		BYTE ct_block[COLUMN_SIZE][4];
 		BYTE IV_block[COLUMN_SIZE][4];
-		stream2block(this->CT, ct_block, COLUMN_SIZE);
+		stream2block(this->CT + i, ct_block, COLUMN_SIZE);
 		copyBlock(this->IV, IV_block, COLUMN_SIZE);
 		this->setIV(ct_block);
 
@@ -58,16 +58,18 @@ void AES128CBC::Decrypt() {
 		plaintext += BLOCK_SIZE;
 	}
 
-
+	// plaintext[-1] read out the padding number and then we use it as index to add an end of string the the plaintext.
+	plaintext[-plaintext[-1]] = 0;
 
 }
 
 void AES128CBC::setCT(char* CT_hex) {
-	char IV_hex[BLOCK_SIZE * 2];
+	char IV_hex[BLOCK_SIZE * 2 + 1];
 	char* CT_hex_noIV;
 	for (int i = 0; i < BLOCK_SIZE * 2; i++) {
 		IV_hex[i] = CT_hex[i];
 	}
+	IV_hex[BLOCK_SIZE * 2] = 0;
 	this->setIV(IV_hex);
 
 	CT_hex_noIV = new char[strlen(CT_hex) - BLOCK_SIZE * 2 + 1];

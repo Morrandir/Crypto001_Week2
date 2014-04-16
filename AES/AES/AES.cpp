@@ -26,11 +26,19 @@ void AES::setCT(char* CT_hex) {
 
 }
 
+// Take a plain text of hex string, transform it to binary string and assign to class member PT;
+void AES::setPT(char* PT_hex) {
+
+	this->PT = hex2bin(PT_hex);
+	this->size_PT = strlen(PT_hex) / 2;
+
+}
+
 // Take a stream of hex string and output a steam of binary string;
 BYTE* hex2bin(char* string_hex) {
 	
 	int hex_length = strlen(string_hex);
-	BYTE* temp_CT_bin = new BYTE[hex_length / 2];
+	BYTE* temp_CT_bin = new BYTE[hex_length / 2 + 1];
 
 	for (int i = 0; i < hex_length / 2; i++) {
 		char placeholder[2];
@@ -38,6 +46,8 @@ BYTE* hex2bin(char* string_hex) {
 		placeholder[1] = string_hex[2 * i + 1];
 		temp_CT_bin[i] = strtoul(placeholder, 0, 16);
 	}
+
+	temp_CT_bin[hex_length / 2] = 0;
 
 	return temp_CT_bin;
 }
@@ -145,6 +155,20 @@ void blockXOR(BYTE src[][4], BYTE dst[][4], int column_size) {
 	}
 }
 
+void AESround(BYTE pt_block[][4], BYTE round_key[][4], int column_size, int iRound, int total_rounds) {
+
+	substitute(pt_block, column_size);
+	shiftRow(pt_block, column_size);
+	if (iRound != total_rounds) {
+		for (int i = 0; i < column_size; i++) {
+			mixColumn(pt_block[i]);
+		}
+	}
+	blockXOR(round_key, pt_block, column_size);
+
+
+
+}
 
 void AESround_inv(BYTE ct_block[][4], BYTE round_key[][4], int column_size, int iRound, int total_rounds) {
 	
@@ -174,6 +198,19 @@ void mixColumn_inv(BYTE ct_column[4]) {
 	ct_column[3] = mc11[temp[0]] ^ mc13[temp[1]] ^ mc9[temp[2]] ^ mc14[temp[3]];
 }
 
+void mixColumn(BYTE pt_column[4]) {
+	BYTE temp[4];
+
+	for (int i = 0; i < 4; i++) {
+		temp[i] = pt_column[i];
+	}
+
+	pt_column[0] = mc2[temp[0]] ^ mc3[temp[1]] ^ temp[2] ^ temp[3];
+	pt_column[1] = temp[0] ^ mc2[temp[1]] ^ mc3[temp[2]] ^ temp[3];
+	pt_column[2] = temp[0] ^ temp[1] ^ mc2[temp[2]] ^ mc3[temp[3]];
+	pt_column[3] = mc3[temp[0]] ^ temp[1] ^ temp[2] ^ mc2[temp[3]];
+}
+
 void shiftRow_inv(BYTE ct_block[][4], int column_size) {
 	revertBlock(ct_block, column_size);
 
@@ -182,4 +219,14 @@ void shiftRow_inv(BYTE ct_block[][4], int column_size) {
 	}
 
 	revertBlock(ct_block, column_size);
+}
+
+void shiftRow(BYTE pt_block[][4], int column_size) {
+	revertBlock(pt_block, column_size);
+
+	for (int i = 1; i < column_size; i++) {
+		rotate(pt_block[i], i);
+	}
+
+	revertBlock(pt_block, column_size);
 }

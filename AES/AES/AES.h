@@ -2,6 +2,7 @@
 #include "Windows.h"
 
 
+
 static const unsigned char s[256] =
 {
 	0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -182,13 +183,23 @@ class AES
 public:
 	AES();
 	~AES();
-protected:
-	BYTE* PT;
-	BYTE* CT;
-	int size_CT;
 
 	// Take a cipher text of hex string, transform it to binary string and assign to class member CT;
 	void setCT(char* CT_hex);
+
+	// Take a plain text of hex string, transform it to binary string and assign to class member PT;
+	void setPT(char* PT_hex);
+
+protected:
+	BYTE* PT;
+	BYTE* CT;
+	int size_PT;
+	int size_CT;
+
+
+
+
+
 public:
 
 

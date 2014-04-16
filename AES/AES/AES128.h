@@ -16,6 +16,8 @@ public:
 	// Take a key text of hex string, tranform it to binary string and store in the class member key;
 	void setKey(char* key_hex);
 
+	// Encrypt() encrypts this->PT using this->key, privided that both members have been set correctly.
+	void Encrypt();
 
 	// Decrypt() decrypts this->CT using this->key, provided that both members have been set correctly.
 	void Decrypt();

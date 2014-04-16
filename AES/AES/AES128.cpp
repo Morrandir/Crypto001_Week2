@@ -37,8 +37,115 @@ void AES128::setKey(char* key_hex) {
 // Decrypt() decrypts this->CT using this->key, provided that both members have been set correctly.
 void AES128::Decrypt() {
 
+	BYTE* plaintext;
+	if (this->CT == NULL) {
+		printf("please provide cipher text...\n");
+		return;
+	}
+	if (this->size_CT % BLOCK_SIZE != 0) {
+		printf("cipher text size if not n*16 bytes for AES128...\n");
+		return;
+	}
+	if (this->key == NULL) {
+		printf("please provide key...\n");
+		return;
+	}
+
+	plaintext = new BYTE[this->size_CT];
+	if (plaintext != NULL) {
+		if (this->PT != NULL) {
+			delete[] this->PT;
+			this->PT = NULL;
+		}
+		this->PT = plaintext;
+	}
+	else {
+		printf("error allocating memory for plain text...\n");
+		return;
+	}
+
+	this->keySchedule();
+
+	for (int i = 0; i < this->size_CT; i += BLOCK_SIZE) {
+
+		BYTE ct_block[COLUMN_SIZE][4];
+		stream2block(this->CT + i, ct_block, COLUMN_SIZE);
+
+		for (int iRound = ROUNDS; iRound > 0; iRound--) {
+			AESround_inv(ct_block, this->round_key[iRound], COLUMN_SIZE, iRound, ROUNDS);
+		}
+
+		blockXOR(this->round_key[0], ct_block, COLUMN_SIZE);
+		block2stream(ct_block, plaintext, COLUMN_SIZE);
+
+		plaintext += BLOCK_SIZE;
+	}
 
 }
+
+// Encrypt() encrypts this->PT using this->key, privided that both members have been set correctly.
+void AES128::Encrypt() {
+
+	BYTE* ciphertext;
+
+	if (this->PT == NULL) {
+		printf("please provide plain text...\n");
+		return;
+	}
+	if (this->size_PT % BLOCK_SIZE != 0) {
+		printf("plain text block is not n*16 bytes for AES128...\n");
+		return;
+	}
+
+	if (this->key == NULL) {
+		printf("please provide key...\n");
+		return;
+	}
+
+	//// padding is for AES CBC, not here;
+	//plaintext_padding = new BYTE[this->size_PT + BLOCK_SIZE - this->size_PT % BLOCK_SIZE];
+	//for (int i = 0; i < this->size_PT; i++) {
+	//	plaintext_padding[i] = this->PT[i];
+	//}
+	//for (int i = this->size_PT; i < this->size_PT + BLOCK_SIZE - this->size_PT % BLOCK_SIZE; i++) {
+	//	plaintext_padding[i] = BLOCK_SIZE - this->size_PT % BLOCK_SIZE;
+	//}
+	//this->size_PT = this->size_PT + BLOCK_SIZE - this->size_PT % BLOCK_SIZE;
+
+
+	ciphertext = new BYTE[this->size_PT]; // ciphertext should have same size of PT;
+	if (ciphertext != NULL) {
+		if (this->CT != NULL) {
+			delete[] this->CT;
+			this->CT = NULL;
+		}
+		this->CT = ciphertext;
+	}
+	else {
+		printf("error allocating memory for cipher text...\n");
+		return;
+	}
+
+	this->keySchedule();
+
+	for (int i = 0; i < this->size_PT; i += BLOCK_SIZE) {
+
+		BYTE pt_block[COLUMN_SIZE][4];
+		stream2block(this->PT + i, pt_block, COLUMN_SIZE);
+
+		blockXOR(this->round_key[0], pt_block, COLUMN_SIZE);
+		for (int iRound = 1; iRound <= ROUNDS; iRound++) {
+			AESround(pt_block, this->round_key[iRound], COLUMN_SIZE, iRound, ROUNDS);
+		}
+
+
+		block2stream(pt_block, ciphertext, COLUMN_SIZE);
+
+		ciphertext += BLOCK_SIZE;
+	}
+
+}
+
 
 // Generate the expanded round keys.
 void AES128::keySchedule() {
